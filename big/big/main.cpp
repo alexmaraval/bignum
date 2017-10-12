@@ -83,8 +83,18 @@ int main(int argc, const char * argv[]) {
     std::cout << +d << std::endl;
     
     std::cout << std::endl;
-    
-    
+    a = b;
+    std::cout << a << std::endl;
+    a = -05;
+    std::cout << a << std::endl;
+    a = "-03";
+    std::cout << a << std::endl;
+    a += b;
+    std::cout << a << std::endl;
+    a -= b;
+    std::cout << a << std::endl;
+    a *= b;
+    std::cout << a << std::endl;
     
     return 0;
 }
