@@ -9,92 +9,73 @@
 #include "big_class.hpp"
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 //                                                                                          BIGINT CLASS
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
 //                                      OSTREAM OPERATOR
+// ---------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
 std::ostream &operator<< (std::ostream &os, const bigint &b)
 {
-    os << b._number;
+    os << b._sign << b._number;
     return os;
 }
 
 
 // ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
 //                                      CONSTRUCTORS et al.
 // ---------------------------------------------------------------------------------------------
-bigint::bigint(std::string num)
+// ---------------------------------------------------------------------------------------------
+
+// ----------------------------------------------
+// CONSTRUCTORS
+// ----------------------------------------------
+bigint::bigint(std::string num, std::string sign)
 {
-    while (num[0] == '0')                                                                           // remove the useless occasional "0" in front of the number
+    _sign = sign;
+    if(num[0] == '-')                                                                               // in case user has put the sign in the number directly, allows to initialise bigint a = "-12"
     {
+        _sign = "-";
         num.erase(0,1);
     }
-    if (num == "") {num = "0";}                                                                     // replace empty string by zero string
-    this->_number = num;
-}
-
-
-// ---------------------------------------------------------------------------------------------
-//                                        GET FUNCTION
-// ---------------------------------------------------------------------------------------------
-std::string bigint::get_str_num()
-{
-    return (this->_number);
-}
-
-
-// ---------------------------------------------------------------------------------------------
-//                                       LOGICAL OPERATORS
-// ---------------------------------------------------------------------------------------------
-bool bigint::operator==(const bigint &b) const
-{
-    if(_number.size() == b._number.size())
+    
+    _number = num;
+    while (_number[0] == '0' and _number.size() > 1)                                                                       // remove the useless occasional "0" in front of the number
     {
-        int i = 0;
-        while(_number[i] == b._number[i] and i < _number.size()) { i++; }
-        return(i == _number.size());
+        _number.erase(0,1);
     }
-    return false;
+    if (_number == "0") {_sign = "";}
 }
 
 
-bool bigint::operator<(const bigint &b) const
+// ----------------------------------------------
+// COPY CONSTRUCTOR
+// ----------------------------------------------
+bigint::bigint(const bigint &b)
 {
-    if(_number.size() < b._number.size()) { return true; }                                          // if string length of this is smaller, number is clearly smaller
-    else if(_number.size() == b._number.size())                                                     // if both strings have same length,
-    {
-        int i = 0;
-        while(_number[i] == b._number[i] and i < _number.size()) { i++; }                           // compare each digit until a difference is found
-        return(_number[i] < b._number[i]);                                                          // it will return the result of this logical test (a boolean
-    }
-    else { return false; }
+    _sign = b._sign;
+    _number = b._number;
 }
 
 
-bool bigint::operator>(const bigint &b) const                                                       // returns the negation of the < operator
-{
-    return(!(*this < b));
-}
+// ----------------------------------------------
+// DESTRUCTOR
+// ----------------------------------------------
+
+// ----------------------------------------------
+// PRIVATE MANUAL OPERATORS
+// ----------------------------------------------
 
 
-bool bigint::operator<=(const bigint &b) const
-{
-    return(*this == b or *this < b);
-}
-
-
-bool bigint::operator>=(const bigint &b) const
-{
-    return(*this == b or *this > b);
-}
-
-// ---------------------------------------------------------------------------------------------
-//                                  ARITHMETIC OPERATORS
-// ---------------------------------------------------------------------------------------------
-bigint bigint::operator+(const bigint &b) const
+bigint bigint::manual_sum(const bigint &b) const                                                    // just does the sum of two positive integers !!!! manage sign outside of the function
 {
     std::string sum = "";                                                                           // result of the sum
     std::string _a = _number, _b = b._number;                                                       // temporary copies of arguments
@@ -103,7 +84,7 @@ bigint bigint::operator+(const bigint &b) const
     while(_a.size() > _b.size()) { _b = "0" + _b; }                                                 // adjust size of _b
     _a = "0" + _a;                                                                                  // add one 0 in front of both _a and _b in case we have a
     _b = "0" + _b;                                                                                  // remainder at the last iteration of the following loop
-
+    
     
     for(unsigned long i = _a.size(); i>0; i--)
     {
@@ -112,11 +93,11 @@ bigint bigint::operator+(const bigint &b) const
         sum = std::to_string(d) + sum;
         r = (s-d)/10;                                                                               // remainder
     }
+    
     return bigint(sum);
 }
 
-
-bigint bigint::operator-(const bigint &b) const
+bigint bigint::manual_diff(const bigint &b) const                                                   // performs difference of two positive integers
 {
     std::string diff = "";                                                                          // result of the difference
     std::string _a = _number, _b = b._number;                                                       // temporary copies of arguments
@@ -152,11 +133,10 @@ bigint bigint::operator-(const bigint &b) const
             r = (s-d)/10;
         }
     }
-    return bigint(sign_flip_flag + bigint(diff)._number);
+    return bigint(diff, sign_flip_flag);
 }
 
-
-bigint bigint::operator*(const bigint &b) const
+bigint bigint::manual_prod(const bigint &b) const                                                   // performs the product of integers both positive (or both negative for that matter)
 {
     std::string prod = "";                                                                          // result of the product
     std::string sum = "";                                                                           // intermediary sum after each intermediary product
@@ -195,31 +175,200 @@ bigint bigint::operator*(const bigint &b) const
     return bigint(sum);
 }
 
-bigint bigint::operator^(const bigint &b) const
+bigint bigint::manual_div(const bigint &b) const
 {
-    bigint i("1"), pow(*this);
-    while (i<b) { pow *= *this; i++; }
-    return pow;
+    return bigint();
 }
 
 
 // ---------------------------------------------------------------------------------------------
-//                                      UNILATERAL OPERATORS
 // ---------------------------------------------------------------------------------------------
+//                                        GET FUNCTIONS
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+std::string bigint::get_num()
+{
+    return _number;
+}
+
+std::string bigint::get_sign()
+{
+    return _sign;
+}
+
+
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+//                                     OPERATORS WITH BIGNUM
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+
+// ----------------------------------------------
+// LOGICAL OPERATORS
+// ----------------------------------------------
+bool bigint::operator<(const bigint &b) const                                                       // Can it be optimised?
+{
+    if(_sign == "-" and b._sign == "")                                                              // four distinct cases
+    {
+        return true;
+    }
+    else if (_sign == "" and b._sign == "-")
+    {
+        return false;
+    }
+    else if (_sign == "" and b._sign == "")
+    {
+        if(_number.size() < b._number.size())
+        {
+            return true;
+        }                                                                                           // if string length of this is smaller, number is clearly smaller
+        else if(_number.size() == b._number.size())                                                 // if both strings have same length,
+        {
+            int i = 0;
+            while(_number[i] == b._number[i] and i < _number.size()) { i++; }                       // compare each digit until a difference is found
+            return(_number[i] < b._number[i]);                                                      // it will return the result of this logical test (a boolean)
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if(_number.size() > b._number.size())
+        {
+            return true;
+        }
+        else if(_number.size() == b._number.size())
+        {
+            int i = 0;
+            while(_number[i] == b._number[i] and i < _number.size()) { i++; }
+            return(_number[i] > b._number[i]);
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
+
+bool bigint::operator==(const bigint &b) const
+{
+    return(_number == b._number and _sign == b._sign);
+}
+
+bool bigint::operator!=(const bigint &b) const
+{
+    return (!(*this == b));
+}
+
+bool bigint::operator>(const bigint &b) const                                                       // returns the negation of the < operator
+{
+    return(!(*this < b) and !(*this == b));
+}
+
+
+bool bigint::operator<=(const bigint &b) const
+{
+    return(*this == b or *this < b);
+}
+
+
+bool bigint::operator>=(const bigint &b) const
+{
+    return(*this == b or *this > b);
+}
+
+
+// ----------------------------------------------
+// ARITHMETIC OPERATORS
+// ----------------------------------------------
+bigint bigint::operator+(const bigint &b) const
+{
+    bigint _a = *this, _b = b;
+    
+    if(_sign == b._sign)
+    {
+        return _a.manual_sum(_b);
+    }
+    else
+    {
+        if(_a < _b)
+        {
+            return _b.manual_diff(-_a);
+        }
+        else if (_b < _a)
+        {
+            return _a.manual_diff(-_b);
+        }
+        else
+        {
+            return bigint();
+        }
+    }
+}
+
+
+bigint bigint::operator-(const bigint &b) const
+{
+    bigint _a = *this, _b = b;
+    
+    if (_a._sign == "" and _b._sign == "")
+    {
+        return _a.manual_diff(_b);
+    }
+    else if (_a._sign == "-" and _b._sign == "")
+    {
+        return _a + _b;
+    }
+    else                                                                                            // remain the cases where (_a._sign == "-" or _a._sign == "") and _b._sign == "-"
+    {
+        return _a + (-_b);                                                                          // whatever the case, the returned operation is the same so we merged both cases
+    }
+}
+
+
+bigint bigint::operator*(const bigint &b) const
+{
+    bigint _a = *this, _b = b;
+    
+    if (_a._sign == _b._sign)
+    {
+        return _a.manual_prod(_b);
+    }
+    else
+    {
+        return -_a.manual_prod(_b);
+    }
+}
+
+bigint bigint::operator^(const bigint &b) const
+{
+    bigint i("", "1"), pow(*this);
+    while (i<b._number) { pow *= *this; i++; }
+    return pow;
+}
+
+
+// ----------------------------------------------
+// UNILATERAL OPERATORS
+// ----------------------------------------------
 bigint bigint::operator- () const
 {
-    return bigint("-" + _number);
+    if (_sign == "-") { return bigint(_number); }
+    else { return bigint(_number, "-"); }
 }
 
 
 bigint bigint::operator+ () const
 {
-    return bigint(_number);
+    return bigint(_number, _sign);
 }
 
-// ---------------------------------------------------------------------------------------------
-//                                      ASSIGNMENT OPERATORS
-// ---------------------------------------------------------------------------------------------
+// ----------------------------------------------
+// ASSIGNMENT OPERATORS
+// ----------------------------------------------
 bigint &bigint::operator= (const bigint &b)
 {
     if(this != &b) { this->_number = b._number; }
@@ -229,7 +378,8 @@ bigint &bigint::operator= (const bigint &b)
 
 bigint &bigint::operator= (const std::string &s)
 {
-    if(this->_number != s) { this->_number = s; }
+    bigint num("",s);                                                                               // ? is bigint num(s) ambiguous ?
+    if(*this != num) { *this = num; }
     return *this;
 };
 
@@ -281,8 +431,66 @@ bigint &bigint::operator*=(const bigint &b)
 
 
 // ---------------------------------------------------------------------------------------------
-//                                      OPERATORS WITH INT
 // ---------------------------------------------------------------------------------------------
+//                                     OPERATORS WITH INT
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+
+// ----------------------------------------------
+// LOGICAL OPERATORS
+// ----------------------------------------------
+bool bigint::operator==(const int &n) const
+{
+    return (*this == bigint(std::to_string(n)));
+//    std::string _n = std::to_string(n);
+//    
+//    if(_number.size() == _n.size())
+//    {
+//        int i = 0;
+//        while(_number[i] == std::to_string(n)[i] and i < _number.size()) { i++; }
+//        return(i == _number.size());
+//    }
+//    return false;
+}
+
+
+bool bigint::operator<(const int &n) const
+{
+    return (*this < bigint(std::to_string(n)));
+//    std::string _n = std::to_string(n);
+//    if(_number.size() < std::to_string(n).size()) { return true; }                                  // if string length of this is smaller, number is clearly smaller
+//    else if(_number.size() == std::to_string(n).size())                                             // if both strings have same length,
+//    {
+//        int i = 0;
+//        while(_number[i] == std::to_string(n)[i] and i < _number.size()) { i++; }                   // compare each digit until a difference is found
+//        return(_number[i] < b._number[i]);                                                          // it will return the result of this logical test (a boolean
+//    }
+//    else { return false; }
+}
+
+
+bool bigint::operator>(const int &n) const                                                          // returns the negation of the < operator
+{
+    return(!(*this < n) and !(*this == n));
+}
+
+
+bool bigint::operator<=(const int &n) const
+{
+    return(*this == n or *this < n);
+}
+
+
+bool bigint::operator>=(const int &n) const
+{
+    return(*this == n or *this > n);
+}
+
+
+
+// ----------------------------------------------
+// ARITHMETIC OPERATORS
+// ----------------------------------------------
 bigint bigint::operator+(const int &n) const
 {
     return (*this + bigint(std::to_string(n)));
@@ -301,10 +509,22 @@ bigint bigint::operator*(const int &n) const
 
 
 
-// ----------------------------------------------------------
-// ------------------------- METHODS ------------------------
-// ----------------------------------------------------------
+// ----------------------------------------------
+// UNILATERAL OPERATORS
+// ----------------------------------------------
 
+
+
+// ----------------------------------------------
+// ASSIGNMENT OPERATORS
+// ----------------------------------------------
+
+
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
+//                                            METHODS
+// ---------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------
 int bigint::digit_sum()
 {
     int dsum = 0;
