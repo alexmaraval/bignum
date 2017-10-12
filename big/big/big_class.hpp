@@ -39,46 +39,57 @@ public:
     std::string get_num();
     std::string get_sign();
     
-    // logical operators bigint with bigint
-    bool operator==(const bigint &b) const;
-    bool operator!=(const bigint &b) const;
-    bool operator<(const bigint &b) const;
-    bool operator>(const bigint &b) const;
-    bool operator<=(const bigint &b) const;
-    bool operator>=(const bigint &b) const;
+    // -------- bigint with bigint --------
+    // logical operators
+    bool operator== (const bigint &b) const;
+    bool operator!= (const bigint &b) const;
+    bool operator<  (const bigint &b) const;
+    bool operator>  (const bigint &b) const;
+    bool operator<= (const bigint &b) const;
+    bool operator>= (const bigint &b) const;
     
-    // arithmetic operators bigint with bigint
+    // arithmetic operators
     bigint operator+(const bigint &b) const;
     bigint operator-(const bigint &b) const;
     bigint operator*(const bigint &b) const;
     bigint operator^(const bigint &b) const;
     
     // unilateral operator
-    bigint operator-() const;
-    bigint operator+() const;
+    bigint operator-    () const;
+    bigint operator+    () const;
     
-    // assignment and conversion
-    bigint &operator= (const bigint &b);
-    bigint &operator= (const std::string &s);
-    bigint &operator++();
-    bigint &operator++(int);
-    bigint &operator--();
-    bigint &operator--(int);
-    bigint &operator+=(const bigint &b);
-    bigint &operator-=(const bigint &b);
-    bigint &operator*=(const bigint &b);
+    // increment operators
+    bigint &operator++  ();
+    bigint operator++  (int);
+    bigint &operator--  ();
+    bigint operator--  (int);
     
-    // operators bigint with int
+    // assignment operators (& with string)
+    bigint &operator=   (const bigint &b);
+    bigint &operator=   (const std::string &s);
+    bigint &operator+=  (const bigint &b);
+    bigint &operator-=  (const bigint &b);
+    bigint &operator*=  (const bigint &b);
+    
+    // --------- bigint with int ----------
+    // logical operators
+    bool operator== (const int &n) const;
+    bool operator!= (const int &n) const;
+    bool operator<  (const int &n) const;
+    bool operator>  (const int &n) const;
+    bool operator<= (const int &n) const;
+    bool operator>= (const int &n) const;
+    
+    // arithmetic operators
     bigint operator+(const int &n) const;
     bigint operator-(const int &n) const;
     bigint operator*(const int &n) const;
     
-    // logical operators bigint with int
-    bool operator==(const int &n) const;
-    bool operator<(const int &n) const;
-    bool operator>(const int &n) const;
-    bool operator<=(const int &n) const;
-    bool operator>=(const int &n) const;
+    // assignment operators
+    bigint &operator=   (const int &n);
+    bigint &operator+=  (const int &n);
+    bigint &operator-=  (const int &n);
+    bigint &operator*=  (const int &n);
     
     // operators bigint with long int
     // operators bigint with long long int

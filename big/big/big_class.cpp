@@ -48,7 +48,7 @@ bigint::bigint(std::string num, std::string sign)
     }
     
     _number = num;
-    while (_number[0] == '0' and _number.size() > 1)                                                                       // remove the useless occasional "0" in front of the number
+    while (_number[0] == '0' and _number.size() > 1)                                                // remove the useless occasional "0" in front of the number
     {
         _number.erase(0,1);
     }
@@ -345,7 +345,8 @@ bigint bigint::operator*(const bigint &b) const
 
 bigint bigint::operator^(const bigint &b) const
 {
-    bigint i("", "1"), pow(*this);
+    bigint i("1"), pow(*this);
+    if (b == bigint()) {return i;}
     while (i<b._number) { pow *= *this; i++; }
     return pow;
 }
@@ -366,23 +367,10 @@ bigint bigint::operator+ () const
     return bigint(_number, _sign);
 }
 
+
 // ----------------------------------------------
-// ASSIGNMENT OPERATORS
+// INCREMENT OPERATORS
 // ----------------------------------------------
-bigint &bigint::operator= (const bigint &b)
-{
-    if(this != &b) { this->_number = b._number; }
-    return *this;
-};
-
-
-bigint &bigint::operator= (const std::string &s)
-{
-    bigint num("",s);                                                                               // ? is bigint num(s) ambiguous ?
-    if(*this != num) { *this = num; }
-    return *this;
-};
-
 bigint &bigint::operator++()
 {
     *this = *this + 1;
@@ -390,9 +378,11 @@ bigint &bigint::operator++()
 }
 
 
-bigint &bigint::operator++(int)
+bigint bigint::operator++(int)
 {
-    return ++*this;
+    bigint temp(*this);
+    ++(*this);
+    return temp;
 }
 
 
@@ -403,10 +393,34 @@ bigint &bigint::operator--()
 }
 
 
-bigint &bigint::operator--(int)
+bigint bigint::operator--(int)
 {
-    return --*this;
+    bigint temp(*this);
+    --(*this);
+    return temp;
 }
+
+
+// ----------------------------------------------
+// ASSIGNMENT OPERATORS
+// ----------------------------------------------
+bigint &bigint::operator= (const bigint &b)
+{
+    if(this != &b)
+    {
+        _number = b._number;
+        _sign = b._sign;
+    }
+    return *this;
+};
+
+
+bigint &bigint::operator= (const std::string &s)
+{
+    bigint num(s);
+    if(*this != num) { *this = num; }
+    return *this;
+};
 
 
 bigint &bigint::operator+=(const bigint &b)
@@ -451,6 +465,11 @@ bool bigint::operator==(const int &n) const
 //        return(i == _number.size());
 //    }
 //    return false;
+}
+
+bool bigint::operator!=(const int &n) const
+{
+    return !(*this == n);
 }
 
 
@@ -505,19 +524,37 @@ bigint bigint::operator-(const int &n) const
 
 bigint bigint::operator*(const int &n) const
 {
-    return (*this * bigint(std::to_string(n)));}
-
-
-
-// ----------------------------------------------
-// UNILATERAL OPERATORS
-// ----------------------------------------------
-
+    return (*this * bigint(std::to_string(n)));
+}
 
 
 // ----------------------------------------------
 // ASSIGNMENT OPERATORS
 // ----------------------------------------------
+bigint &bigint::operator=(const int &n)
+{
+    bigint t(std::to_string(n));
+    if(*this != t)
+    {
+        *this = t;
+    }
+    return *this;
+}
+
+bigint &bigint::operator+=(const int &n)
+{
+    return (*this += bigint(std::to_string(n)));
+}
+
+bigint &bigint::operator-=(const int &n)
+{
+    return (*this -= bigint(std::to_string(n)));
+}
+
+bigint &bigint::operator*=(const int &n)
+{
+    return (*this *= bigint(std::to_string(n)));
+}
 
 
 // ---------------------------------------------------------------------------------------------
